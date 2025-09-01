@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dune Arcanum — Brick Breaker (No Paddle)</title>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- PixiJS (WebGL renderer) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/8.12.0/pixi.min.js"></script>
+  <!-- (Optional) Pixi blur filter for soft glows -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@pixi/filter-kawase-blur@5.2.1/dist/filter-kawase-blur.min.js"></script>
+  <!-- Main game script -->
+  <script defer src="main.js"></script>
+</head>
+<body>
+  <div id="hud">
+    <div class="left">
+      <div id="score">Score: 0</div>
+      <div id="turn">Turn: 1</div>
+    </div>
+    <div class="right">
+      <button id="ffwd" title="Fast forward (space)">»</button>
+      <button id="mute" title="Toggle sound">🔈</button>
+    </div>
+  </div>
+  <div id="stage"></div>
+  <div id="overlay">
+    <div id="title">Dune Arcanum</div>
+    <div id="subtitle">Drag to aim. Release to launch.</div>
+  </div>
+</body>
+</html>
