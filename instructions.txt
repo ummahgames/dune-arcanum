@@ -1,0 +1,489 @@
+# “Dune Arcanum” — Brick Breaker (No Paddle) Game Design (Markdown)
+
+## 1) High-level Concept
+
+A one-finger/one-mouse **trajectory brick breaker** with no paddle. You **launch** a ball from wherever it lands. After every launch resolves (i.e., the ball stops moving), **all bricks descend** by a small step. If any brick crosses the **ground line**, you lose. The fantasy is “desert–Islamic geometry”: tessellated patterns, brass inlay, star polygons, tiling mosaics, wind-blown sand, and calligraphic accents.
+
+---
+
+## 2) Core Loop
+
+1. **Aim**: Drag to choose an angle from the ball’s current rest position.
+2. **Launch**: Release to fire; ball travels with elastic collisions off walls and bricks.
+3. **Resolve**: Ball bounces until it falls to rest (y ≤ floor + ε or velocity ≈ 0 and below a threshold height).
+4. **Descent**: All bricks descend by `rowStep` pixels/units.
+5. **Check**: If any brick’s bottom ≥ ground → **Game Over**; else **repeat**.
+
+---
+
+## 3) Controls & UX
+
+* **Mouse/Touch**: Press/drag to aim; release to launch.
+* **Aim Guide**: Predictive dotted line with limited bounces (e.g., up to 3 visualized) that respects wall reflections and first-collision with bricks.
+* **Fast-forward**: Tap/space to increase simulation time scale while the ball is in flight.
+* **Undo (optional power-up)**: Re-aim the last shot before descent phase (limited uses).
+* **Settings**: Sound toggles, vibration, color-blind friendly palettes, reduced FX.
+
+---
+
+## 4) World & Coordinate System
+
+* Origin at **bottom-left**. `x ∈ [0, W]`, `y ∈ [0, H]`. Ground at `y = 0`.
+* **Walls**: Left `x=0`, Right `x=W`, Ceiling `y=H`.
+* **Ball**: radius `r`. Initial speed `v0`. Gravity **off** (classic brick breaker feel) or **very light** (optional mode).
+* **Time step**: Fixed Δt (e.g., 1/120 s) with accumulator for deterministic physics.
+
+---
+
+## 5) Ball Physics & Collisions
+
+* **Motion**: `p(t+Δt) = p(t) + v(t) * Δt`.
+* **Walls**: Perfectly elastic:
+
+  * Left/Right: `vx = -vx`; Ceiling: `vy = -vy`; Floor: landing occurs when `y ≤ r`.
+* **Bricks**: AABB or convex polygons. On hit:
+
+  * Compute **time-of-impact** against AABB; reflect velocity across contact normal:
+
+    * `v' = v - 2 * (v · n) * n` where `n` is the collision normal.
+  * Apply brick damage; spawn particles; continue trajectory within the same frame using **swept** collision resolution to prevent tunneling.
+* **Corner cases**: Use small positional slop (`ε`) and **continuous collision detection** (raycast from previous to next position).
+
+---
+
+## 6) Bricks & Entities
+
+### Brick Types
+
+* **Basic Tile (1 HP)**: Single hit.
+* **Carved Tile (2–3 HP)**: HP indicated by geometric overlay ring count.
+* **Sandstone Block (High HP, Heavy)**: Larger, fewer per row.
+* **Obsidian (Reflector)**: Does not break; reflects with +10% speed (cap at `vMax`).
+* **Mirror Triangle**: Reflects changing angle slightly (adds curvature by modifying normal over area).
+* **Explosive Urn**: On break, radial damage to neighbors.
+* **Prism**: Splits ball into 2 weaker balls with 50% damage for the remaining flight (optional).
+* **Rune Gate**: Teleporter pair; preserves speed; exits with small angular jitter.
+* **Crumbling Sand**: When hit, leaves a small falling sand FX, but still counts as a break.
+
+### Special Rows
+
+* **“Calligraphy Chain”**: Linked HP; breaking one propagates 1 damage along the chain.
+
+---
+
+## 7) Descent Mechanic
+
+* After each launch resolves, **all bricks descend** by `rowStep` (e.g., 12 px).
+* New bricks spawn at the **ceiling** aligned to a row grid after N turns or per level script.
+* **Speed pressure**: Later levels increase `rowStep` or spawn rows more frequently.
+
+---
+
+## 8) Power-Ups (on collision or end-of-turn rewards)
+
+* **Pierce**: First N bricks ignore bounce and take full damage.
+* **Multiball**: Spawn M extra balls with slight angular offsets (re-merge on landing, optional).
+* **Ricochet+**: +1 to max bounces visualized and slight elasticity boost.
+* **Time Shard**: Temporarily slows time (except input).
+* **Sandstorm**: On next descent, pushes all bricks back up by half a step (stackable? limit 1).
+* **Bomb**: Next hit triggers small AoE.
+* **Blessing of Symmetry**: Next shot mirrors a ghost shot at the symmetric angle relative to vertical.
+* **Rune of Return**: If a block would touch the ground this turn, revert last rowStep once (consumed).
+
+Power-ups can drop from special tiles or be **earned** via score thresholds.
+
+---
+
+## 9) Scoring & Progression
+
+* **Per-hit score** scaled by brick HP + combo multiplier for consecutive hits without walls.
+* **Chain bonus**: +X% per brick in a single flight, resets on landing.
+* **Perfect Descent**: If after descent no bricks are within `dangerBand` of ground, +bonus.
+* **Level Goals**: Clear all blocks **or** survive K descents.
+* **Worlds**: Each world tweaks parameters (rowStep, density, brick mix) and visual theme variants.
+
+---
+
+## 10) Level Design & Generation
+
+### Hand-Crafted
+
+* Use **Islamic tiling layouts**: girih (decagon, pentagon, bow-tie), star polygons (8-, 10-, 12-point), kufic letter patterns. Form **symmetry groups** (p6m, p4m).
+* Place challenge elements (reflectors, prisms) in symmetric constellations.
+
+### Procedural
+
+* Seeded RNG. Define **row blueprints** as strings:
+
+  * `"B2 . U P . B1"` (B2=brick HP2, U=urn, P=prism, .=empty).
+* Difficulty curve:
+
+  * Increase **HP bands**, **row density**, **reflector ratio**, **spawn cadence**.
+* **Boss Rows**: Large HP glyph that requires multi-angle shots through small apertures.
+
+---
+
+## 11) Failure & Win Conditions
+
+* **Lose**: Any brick’s bottom ≥ ground after descent.
+* **Win**: No bricks remain **or** you complete objective turns.
+
+---
+
+## 12) Visual & Art Direction (Desert Islamic Theme)
+
+* **Palette**: Sand, ochre, teal, lapis, brass, onyx. Accents in turquoise and glazed-ceramic white.
+* **Geometry**: Girih overlays, star tessellations, muqarnas-like stepped arches in background parallax.
+* **Bricks**:
+
+  * Frames with **brass inlay**, enamel fill. HP indicated by concentric motifs or calligraphic ring count.
+  * Reflectors appear as **polished obsidian** with subtle environment map.
+* **Ball**: Polished **carved stone** bead with incised star; faint glow trail; color shifts with power-ups.
+* **Particles**: Sand puffs; spark glints on metal; ceramic shards on break.
+* **UI**: Kufic-inspired headers, simple geometric borders, subtle paper texture.
+* **Background**: Parallax dunes, crescent moon, minaret silhouettes; mirage shimmer shader.
+
+---
+
+## 13) Audio
+
+* **Launch**: Oud pluck + wind woosh.
+* **Brick hit**: Ceramic clink; HP >1 adds lower metallic thunk.
+* **Reflector**: Glassy ping with harmonics.
+* **Power-up**: Chime with maqam-inspired intervals.
+* **Danger**: Low drum as bricks near ground.
+* **Game over**: Soft frame drum cadence.
+
+---
+
+## 14) Technology & Implementation (Client-side HTML/JS/CSS/WebGL)
+
+### Stack
+
+* **Rendering**: WebGL 2 (via raw GL or a light engine). Canvas 2D fallback.
+* **Physics**: Custom lightweight (swept AABB) or matter-js (if 2D) with tuned restitution (but custom is simpler).
+* **Architecture**: ECS (Entity–Component–System) for bricks, ball, power-ups, effects.
+
+### Performance Targets
+
+* **60 FPS** mobile & desktop.
+* Batched **instanced** rendering for bricks; per-instance uniforms for HP colorization.
+* Single-pass particle system using GPU sprites; frustum cull offscreen rows.
+
+---
+
+## 15) Rendering Details
+
+* **Bricks**: Instanced quads (position, size, HP, typeId).
+* **Material**:
+
+  * BaseColor map (ceramic), **normal map** for carved grooves,
+  * Metallic/Roughness for brass frames,
+  * **Environment reflection** for obsidian (cheap cube-map or screen-space approximation).
+* **Girih Overlay**:
+
+  * Full-screen tiled shader (UV → quasiperiodic mask) or precomputed pattern atlas.
+  * Multiply/blend over bricks for ornate look.
+* **Aim Guide**: Line strip with fading alpha; small star glyphs at predicted bounces.
+* **Post FX (optional)**: Subtle vignette; heat-haze for desert shimmer near ground (distortion pass).
+
+---
+
+## 16) Game State & Data
+
+### Key Tunables
+
+```yaml
+speed:
+  v0: 900            # initial speed (px/s)
+  vMax: 1400
+physics:
+  ballRadius: 8
+  restitution: 1.0
+  frictionAir: 0.0
+  dt: 0.0083
+descent:
+  rowStep: 12
+  spawnEveryTurns: 1
+aim:
+  previewBounces: 3
+  previewSegments: 200
+difficulty:
+  hpMin: 1
+  hpMax: 6
+  reflectorChance: 0.1
+```
+
+### Level JSON Schema (example)
+
+```json
+{
+  "name": "Dunes of Samarkand",
+  "rowsVisible": 12,
+  "grid": { "cols": 10, "cellW": 64, "cellH": 28, "padding": 4 },
+  "turnsToWin": 20,
+  "rowBlueprints": [
+    "B2 . U B1 . R . B1 P .",
+    ". B3 B2 . . . B1 . R .",
+    "B1 B1 B1 B1 B1 B1 B1 B1 B1 B1"
+  ],
+  "spawnRule": { "everyTurns": 1, "choose": "weighted" },
+  "weights": { "B1": 4, "B2": 3, "B3": 2, "R": 1, "U": 1, "P": 1 }
+}
+```
+
+---
+
+## 17) ECS Components
+
+* **Transform**: position, size, rotation.
+* **Render**: spriteId/materialId, color, HP tint.
+* **Brick**: hp, type, onHit(), onBreak().
+* **Ball**: velocity, radius, pierce, multishotFlags.
+* **PowerUp**: kind, duration, modifiers.
+* **Collider**: AABB; mask bits.
+* **Descent**: participates in rowStep updates.
+* **FX**: particle emitter config.
+
+---
+
+## 18) Core Systems (Pseudo-code)
+
+### Launch & Resolve
+
+```js
+function launch(angle) {
+  ball.vx = Math.cos(angle) * v0;
+  ball.vy = Math.sin(angle) * v0;
+  state = "inFlight";
+}
+
+function update(dt) {
+  if (state !== "inFlight") return;
+
+  // Integrate
+  let nextPos = ball.pos.add(ball.vel.mul(dt));
+
+  // Continuous collision detection against walls
+  handleWallSwept(ball, nextPos);
+
+  // Raycast against bricks, earliest time-of-impact
+  let hit = earliestBrickHit(ball.pos, nextPos, bricks);
+  if (hit) {
+    // Move to impact
+    ball.pos = hit.point;
+    // Damage brick
+    applyDamage(hit.brick, damageFor(ball));
+    // Reflect
+    ball.vel = reflect(ball.vel, hit.normal);
+    // Nudge out along normal
+    ball.pos = ball.pos.add(hit.normal.mul(epsilon));
+  } else {
+    ball.pos = nextPos;
+  }
+
+  // Landing check
+  if (ball.pos.y - ball.radius <= groundY && ball.vel.y < 0 && speed(ball.vel) < landSpeed) {
+    ball.pos.y = groundY + ball.radius;
+    state = "landed";
+    beginDescentPhase();
+  }
+}
+```
+
+### Descent Phase
+
+```js
+function beginDescentPhase() {
+  // move all bricks down
+  for (let b of bricks) b.y -= rowStep;
+
+  // spawn new row at top if rule matches
+  if (turn % spawnEveryTurns === 0) spawnRowAtTop();
+
+  // game over check
+  for (let b of bricks) {
+    if (b.y - b.h/2 <= groundY) gameOver();
+  }
+  state = "aiming"; // new turn
+  turn++;
+}
+```
+
+### Aim Preview (limited bounces)
+
+```js
+function buildAimPreview(origin, dir, maxBounces=3) {
+  let points = [origin];
+  let p = origin, v = dir.norm().mul(previewLen);
+  for (let i=0;i<maxBounces;i++){
+    let hit = raycastWallsAndFirstBrick(p, v);
+    if (!hit) break;
+    points.push(hit.point);
+    v = reflect(v, hit.normal);
+    p = hit.point.add(hit.normal.mul(epsilon));
+  }
+  return points;
+}
+```
+
+---
+
+## 19) Collision Details (Swept AABB)
+
+* Treat ball as circle; expand brick AABBs by radius; cast a **ray** from `p` to `p + v*dt`.
+* For each brick, compute entry/exit times `tEntry`, `tExit` along x/y; collide if `tEntry ≤ tExit` and `0 ≤ tEntry ≤ 1`; pick **smallest `tEntry`**.
+* Normal is axis of maximum `tEntry` (x or y); reflect accordingly.
+
+---
+
+## 20) UI Layout
+
+* **Top Bar**: Score, turn, remaining rows to win, lives (if any), power-ups inventory (icons in brass frames).
+* **Center**: Playfield with **geometric border**.
+* **Bottom**: Ground line (ornate tile), launch reticle at ball with **compass rose**.
+* **Side Panel (desktop)**: Level objectives and lore card with miniature mosaic.
+
+---
+
+## 21) Accessibility & Input
+
+* **Tap-to-aim** alternative: Tap destination point; angle is computed toward that point with clamped min/max.
+* **High-contrast mode**: Replace low-contrast sand tones with bold outlines.
+* **Haptics**: Gentle vibration on hits (mobile).
+* **Reduced motion**: Disable heat-haze and heavy particles.
+
+---
+
+## 22) CSS/HTML Structure (Sketch)
+
+```html
+<div id="app">
+  <header class="hud">
+    <div class="score"></div>
+    <div class="turn"></div>
+    <div class="inventory"></div>
+  </header>
+  <main class="stage">
+    <canvas id="gfx"></canvas>
+    <canvas id="ui"></canvas> <!-- aim guide & overlays -->
+  </main>
+  <footer class="controls">
+    <button id="fastForward">»</button>
+    <button id="settings">⚙</button>
+  </footer>
+</div>
+```
+
+```css
+:root {
+  --sand:#CDAA7D; --brass:#B08D57; --lapis:#1E5AA8; --onyx:#1B1B1B; --teal:#2E8B8B;
+  --paper:#F8F3E8; --ink:#2B2A28;
+}
+body { background: var(--paper) url(assets/paper.png); color: var(--ink); }
+.hud, .controls { font-family: 'Noto Naskh Arabic', system-ui; }
+.stage { position: relative; aspect-ratio: 9/16; margin: auto; border: 20px solid var(--brass); border-image: url(assets/border_girih.png) 30 round; }
+#gfx, #ui { position:absolute; inset:0; }
+```
+
+---
+
+## 23) WebGL Notes
+
+* **Geometry**: Brick quad VBO; instance attributes: `a_pos`, `a_size`, `a_hp`, `a_type`.
+* **Vertex Shader**: Transform to NDC; pass UV & instance data.
+* **Fragment Shader**:
+
+  * Sample **pattern atlas**; modulate by HP (saturation/brightness).
+  * Optional **screen-space normal** perturbation for ceramic glaze.
+* **Heat-Haze**: Fullscreen pass with noise-based UV offset near ground band.
+* **Particles**: GPU sprites with a single draw call (texture atlas of sand/spark).
+
+---
+
+## 24) Content Pipeline
+
+* **Pattern Atlases**: Prebaked PNGs of girih motifs at multiple scales.
+* **SDF Fonts** for crisp kufic headers at any resolution.
+* **JSON** level files; load via `fetch`; validate against schema.
+* **Localization**: RTL support for Arabic via CSS `direction: rtl` in text regions.
+
+---
+
+## 25) Tuning & Difficulty
+
+* Early levels: fewer descents, low HP, generous gaps.
+* Mid: introduce reflectors, urns, prisms; `rowStep` increases.
+* Late: narrow angles required, anti-cheese (e.g., dampen repeated wall skims), more teleports.
+
+---
+
+## 26) Analytics (optional)
+
+* Track **angle histograms**, **turns survived**, **shots per clear**, **power-up usage**.
+* Use to auto-adjust suggested angles (teach moments) or dynamic difficulty.
+
+---
+
+## 27) QA Edge Cases
+
+* Ball trapped bouncing horizontally → **angle jitter** after N wall hits.
+* Multiple simultaneous hits → resolve by earliest `tEntry`; queue others next frame.
+* Teleport exit inside brick → push along exit normal until free (safety solver).
+
+---
+
+## 28) Save/Progress
+
+* **LocalStorage**: world unlocked, level stars, highest score.
+* “Daily Mosaic” challenge: seeded layout changes daily (local date).
+
+---
+
+## 29) Minimal File Layout
+
+```
+/assets
+  /img (bricks, atlas, UI frames, dunes, minarets)
+  /fx  (particles, glows)
+  /fonts (SDF atlas)
+src/
+  index.html
+  style.css
+  main.js
+  ecs/
+    entity.js
+    components.js
+    systems/
+      render.js
+      physics.js
+      input.js
+      descent.js
+      powerups.js
+  shaders/
+    brick.vert
+    brick.frag
+    post.frag
+levels/
+  01_dunes.json
+  02_oasis.json
+```
+
+---
+
+## 30) Quick Balancing Defaults
+
+* `rowStep = 12 px`, `spawnEveryTurns = 1`.
+* `v0 = 900 px/s`, clamp aim angle to `[10°, 170°]` to avoid dead dribbles.
+* Aim preview length ≈ 1.5× screen diagonal; max 3 bounces visualized.
+* Early HP range 1–3; reflectors ≤10% of bricks.
+
+---
+
+## 31) Polishing Checklist
+
+* Subtle **mirage shimmer** near ground.
+* Brass **specular glints** when bricks rotate slightly on hit (tiny squash on impact).
+* **Calligraphic score popups** (gold numerals).
+* **Camera micro-shake** on urn explosions (reduced motion respects setting).
+* **Descent drums** that tempo up as danger rises.
