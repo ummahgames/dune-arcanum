@@ -8,7 +8,7 @@
 const CONFIG = {
   world: { width: 900, height: 1600 },     // logical units, origin at bottom-left (we invert Y)
   grid:  { cols: 10, cellH: 100, padding: 6 },
-  descent: { rowStep: 84, spawnEveryTurns: 1, dangerBand: 120 },
+  descent: { rowStep: 42, spawnEveryTurns: 1, dangerBand: 120 }, // Reduced from 84 to 42 for slower descent
   ball: { radius: 18, v0: 1100, vMax: 1600, landSpeed: 120 },
   aim:  { previewBounces: 3, clampDegMin: 10, clampDegMax: 170 },
   difficulty: { hpMin: 1, hpMax: 4, reflectorChance: 0.12 },
@@ -350,22 +350,26 @@ function addBrick(col, row, type="basic", hp=1){
 }
 
 function spawnRowAtTop(){
-  // choose contents
+  // choose contents - all blocks are 1 HP (disappear after one hit)
   for(let c=0;c<GRID.cols;c++){
-    if (Math.random()<0.16) continue; // empty
+    // Create more consistent patterns - fewer random gaps
+    if (Math.random() < 0.12) continue; // Reduced from 0.16 to 0.12 for more consistent coverage
     const isRefl = Math.random() < CONFIG.difficulty.reflectorChance;
-    const hp = 1 + (Math.random() * (CONFIG.difficulty.hpMax-1) | 0);
+    // All blocks are 1 HP - they disappear after one hit
+    const hp = 1;
     addBrick(c, 0, isRefl?"reflector":"basic", hp);
   }
   // push existing rows' row index (not needed strictly for positioning)
 }
 
 function initialLayout(){
-  // Few rows
+  // Few rows - all blocks are 1 HP (disappear after one hit)
   for(let r=0;r<3;r++){
     for(let c=0;c<GRID.cols;c++){
-      if (Math.random()<0.2) continue;
-      const hp = 1 + (Math.random() * 3 | 0);
+      // Create more consistent patterns - fewer random gaps
+      if (Math.random() < 0.15) continue; // Reduced from 0.2 to 0.15 for more bricks
+      // All blocks are 1 HP - they disappear after one hit
+      const hp = 1;
       addBrick(c, r, "basic", hp);
     }
   }
@@ -420,24 +424,54 @@ function earliestCollision(px,py, vx,vy, dt){
   if (vy > 0){ const t = ((H - CONFIG.ball.radius) - py) / vy; if (t>=0 && t<=dt && t<tMin){ tMin=t; hit={t, nx:0, ny:-1, brick:null} } }
   // Floor landing handled separately (no bounce)
 
-  // Bricks
+  // Bricks - improved collision detection
   const r = CONFIG.ball.radius;
   for (let b of bricks){
     if (!b.alive) continue;
+    
+    // Check if ball is already inside brick (shouldn't happen but safety)
+    if (px >= b.x - b.w/2 - r && px <= b.x + b.w/2 + r &&
+        py >= b.y - b.h/2 - r && py <= b.y + b.h/2 + r) {
+      continue;
+    }
+    
     const x1 = b.x - b.w/2 - r, y1 = b.y - b.h/2 - r;
     const x2 = b.x + b.w/2 + r, y2 = b.y + b.h/2 + r;
+    
+    // Handle zero velocity components
+    if (Math.abs(vx) < 1e-6 && Math.abs(vy) < 1e-6) continue;
+    
     const tx1 = (x1 - px) / (vx||1e-12);
     const tx2 = (x2 - px) / (vx||1e-12);
     const ty1 = (y1 - py) / (vy||1e-12);
     const ty2 = (y2 - py) / (vy||1e-12);
+    
     const tEntry = Math.max(Math.min(tx1,tx2), Math.min(ty1,ty2));
     const tExit  = Math.min(Math.max(tx1,tx2), Math.max(ty1,ty2));
+    
     if (tEntry > tExit || tExit < 0 || tEntry > dt) continue;
+    
     const t = Math.max(tEntry, 0);
     if (t < tMin){
-      // determine normal
-      const nx = (Math.min(tx1,tx2) > Math.min(ty1,ty2)) ? (px + vx*t < b.x ? -1 : 1) : 0;
-      const ny = nx===0 ? (py + vy*t < b.y ? -1 : 1) : 0;
+      // Improved normal calculation based on which face was hit first
+      let nx = 0, ny = 0;
+      const hitX = px + vx * t;
+      const hitY = py + vy * t;
+      
+      // Determine which face was hit by checking distances to edges
+      const distToLeft = Math.abs(hitX - (b.x - b.w/2 - r));
+      const distToRight = Math.abs(hitX - (b.x + b.w/2 + r));
+      const distToTop = Math.abs(hitY - (b.y - b.h/2 - r));
+      const distToBottom = Math.abs(hitY - (b.y + b.h/2 + r));
+      
+      // Find the minimum distance to determine which face was hit
+      const minDist = Math.min(distToLeft, distToRight, distToTop, distToBottom);
+      
+      if (minDist === distToLeft) { nx = 1; ny = 0; }      // Left face
+      else if (minDist === distToRight) { nx = -1; ny = 0; } // Right face
+      else if (minDist === distToTop) { nx = 0; ny = 1; }    // Top face
+      else { nx = 0; ny = -1; }                              // Bottom face
+      
       tMin = t; hit = {t, nx, ny, brick: b};
     }
   }
@@ -474,8 +508,16 @@ function launch(nx, ny){
 }
 
 function beginDescentPhase(){
-  // Move bricks down
-  for (let b of bricks){ if (b.alive){ b.y -= CONFIG.descent.rowStep; b.sprite.y = b.y; } }
+  // Move bricks down and maintain proper grid alignment
+  for (let b of bricks){ 
+    if (b.alive){ 
+      // Move down by one full row height to maintain grid alignment
+      b.y -= CONFIG.grid.cellH; 
+      b.sprite.y = b.y; 
+      // Update row index for proper tracking
+      b.row += 1;
+    } 
+  }
   // Spawn new row at top
   if (state.turn % CONFIG.descent.spawnEveryTurns === 0) spawnRowAtTop();
   // Game over check
@@ -517,16 +559,25 @@ app.ticker.add(() => {
 
 function update(dt){
   if (state.phase === "inFlight"){
-    // Fast-forward trail build
+    // Trail only shows when ball is actively moving
     trail.clear();
     const speed = length(ball.vx, ball.vy);
-    if (speed > 10){
-      trail.beginFill(0xf2dab0, 0.25);
-      for(let i=0;i<6;i++){
-        const t = i/6;
-        trail.drawCircle(ball.x - ball.vx*0.02*i, ball.y - ball.vy*0.02*i, ball.radius * (1 - t*0.7));
+    if (speed > 50 && ball.active){ // Only show trail when moving fast enough and active
+      // Create smooth trail with proper alpha fading
+      for(let i=0;i<8;i++){
+        const t = i/8;
+        const fadeAlpha = 0.4 * (1 - t * 0.9);
+        const trailRadius = ball.radius * (1 - t * 0.7);
+        const trailX = ball.x - ball.vx * 0.012 * i;
+        const trailY = ball.y - ball.vy * 0.012 * i;
+        
+        trail.beginFill(0xf2dab0, fadeAlpha);
+        trail.drawCircle(trailX, trailY, trailRadius);
+        trail.endFill();
       }
-      trail.endFill();
+    } else {
+      // Ensure trail is completely hidden when not moving
+      trail.clear();
     }
 
     // Process motion with swept collisions (limit multiple bounces within dt)
@@ -563,21 +614,15 @@ function update(dt){
             pingAt(b.x, b.y, 0x99e9ff);
             playTone(820,0.05,'square',0.03);
           }else{
-            // damage
-            b.hp -= 1;
+            // All blocks are 1 HP - they disappear immediately when hit
+            b.alive=false;
+            state.score += 10;
+            hudScore.textContent = "Score: " + state.score;
+            b.sprite.parent.removeChild(b.sprite);
+            bricks.splice(bricks.indexOf(b),1);
+            shatterAt(b.x, b.y);
             pingAt(ball.x, ball.y, 0xffe49a);
-            playTone(520 - Math.min(300, (4-b.hp)*40),0.04,'sine',0.03);
-            if (b.hp <= 0){
-              b.alive=false;
-              state.score += 10;
-              hudScore.textContent = "Score: " + state.score;
-              b.sprite.parent.removeChild(b.sprite);
-              bricks.splice(bricks.indexOf(b),1);
-              shatterAt(b.x, b.y);
-            }else{
-              // tint for remaining HP
-              b.sprite.texture = (b.hp<=1)?BRICK_TEX.hp1:(b.hp===2?BRICK_TEX.hp2:(b.hp===3?BRICK_TEX.hp3:BRICK_TEX.hp4));
-            }
+            playTone(520,0.04,'sine',0.03);
             // reflect
             [ball.vx, ball.vy] = reflect(ball.vx, ball.vy, hit.nx, hit.ny);
           }
