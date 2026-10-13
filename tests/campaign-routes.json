@@ -1,0 +1,514 @@
+[
+  {
+    "id": "chapter-1-1",
+    "name": "First Light",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 16,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-1-2",
+    "name": "Echoes of the Wall",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 36,
+        "ability": null
+      },
+      {
+        "angle": 14,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-1-3",
+    "name": "The Moving Sands",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 16,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-1-4",
+    "name": "The Still Water",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 38,
+        "ability": null
+      },
+      {
+        "angle": 12,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-1-5",
+    "name": "Copper Thread",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 14,
+        "ability": null
+      },
+      {
+        "angle": 12,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-1-6",
+    "name": "The Gate of Eight",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 12,
+        "ability": null
+      },
+      {
+        "angle": 12,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-2-1",
+    "name": "Rain on Lapis",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 38,
+        "ability": "pierce"
+      },
+      {
+        "angle": 12,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-2-2",
+    "name": "The Needle Passage",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 158,
+        "ability": "pierce"
+      }
+    ]
+  },
+  {
+    "id": "chapter-2-3",
+    "name": "The Weaver’s Knot",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 62,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-2-4",
+    "name": "Amber Reservoir",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 12,
+        "ability": "pierce"
+      },
+      {
+        "angle": 112,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-2-5",
+    "name": "Four Courtyard Winds",
+    "phase": "victory",
+    "shots": 3,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 32,
+        "ability": "lift"
+      },
+      {
+        "angle": 16,
+        "ability": null
+      },
+      {
+        "angle": 40,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-2-6",
+    "name": "The Peacock Arch",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 16,
+        "ability": "lift"
+      },
+      {
+        "angle": 14,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-3-1",
+    "name": "A Second Star",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 84,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-3-2",
+    "name": "Orion’s Ladder",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 82,
+        "ability": "lift"
+      }
+    ]
+  },
+  {
+    "id": "chapter-3-3",
+    "name": "Twin Moons",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 126,
+        "ability": "pierce"
+      },
+      {
+        "angle": 12,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-3-4",
+    "name": "The Comet’s Wake",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 42,
+        "ability": "pierce"
+      },
+      {
+        "angle": 26,
+        "ability": "pierce"
+      }
+    ]
+  },
+  {
+    "id": "chapter-3-5",
+    "name": "The Lens Garden",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 124,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-3-6",
+    "name": "The Celestial Orrery",
+    "phase": "victory",
+    "shots": 3,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 104,
+        "ability": "pierce"
+      },
+      {
+        "angle": 84,
+        "ability": null
+      },
+      {
+        "angle": 120,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-4-1",
+    "name": "Maps of Memory",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 126,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-4-2",
+    "name": "The Brass Labyrinth",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 36,
+        "ability": "pierce"
+      }
+    ]
+  },
+  {
+    "id": "chapter-4-3",
+    "name": "A Caravan of Stars",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 32,
+        "ability": "pierce"
+      },
+      {
+        "angle": 106,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-4-4",
+    "name": "The Rose Compass",
+    "phase": "victory",
+    "shots": 1,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 12,
+        "ability": "pierce"
+      }
+    ]
+  },
+  {
+    "id": "chapter-4-5",
+    "name": "The Last Quiet Room",
+    "phase": "victory",
+    "shots": 2,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 116,
+        "ability": "pierce"
+      },
+      {
+        "angle": 12,
+        "ability": null
+      }
+    ]
+  },
+  {
+    "id": "chapter-4-6",
+    "name": "The Atlas Awakens",
+    "phase": "victory",
+    "shots": 6,
+    "remaining": 0,
+    "stars": [
+      true,
+      true,
+      true
+    ],
+    "route": [
+      {
+        "angle": 118,
+        "ability": "pierce"
+      },
+      {
+        "angle": 12,
+        "ability": null
+      },
+      {
+        "angle": 12,
+        "ability": null
+      },
+      {
+        "angle": 12,
+        "ability": null
+      },
+      {
+        "angle": 12,
+        "ability": null
+      },
+      {
+        "angle": 32,
+        "ability": "echo"
+      }
+    ]
+  }
+]

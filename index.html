@@ -1,32 +1,52 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Dune Arcanum — Brick Breaker (No Paddle)</title>
-  <link rel="stylesheet" href="style.css"/>
-  <!-- PixiJS (WebGL renderer) -->
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/8.12.0/pixi.min.js"></script>
-  <!-- (Optional) Pixi blur filter for soft glows -->
-  <script defer src="https://cdn.jsdelivr.net/npm/@pixi/filter-kawase-blur@5.2.1/dist/filter-kawase-blur.min.js"></script>
-  <!-- Main game script -->
-  <script defer src="main.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b2028">
+  <meta name="description" content="A luminous ricochet adventure. Restore lost mosaics, follow constellations, and awaken an ancient astronomical atlas. A free, fully client-side browser game.">
+  <title>Dune Arcanum — The Astral Atlas</title>
+  <link rel="icon" href="assets/orb.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="main.js"></script>
 </head>
 <body>
-  <div id="hud">
-    <div class="left">
-      <div id="score">Score: 0</div>
-      <div id="turn">Turn: 1</div>
+  <header class="site-header">
+    <button class="brand" data-action="journey" aria-label="Dune Arcanum home"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 25 13 38 20 25 26 20 38 14 26 2 20 14 13Z"/><circle cx="20" cy="20" r="7"/></svg><span>DUNE <b>ARCANUM</b><small>THE ASTRAL ATLAS</small></span></button>
+    <nav aria-label="Game navigation"><button data-action="journey" class="nav-link active">Journey</button><button data-action="atlas" class="nav-link">Atlas <span id="atlasCount">0/24</span></button><button data-action="daily" class="nav-link">Daily mosaic</button></nav>
+    <button class="icon-button" data-action="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 3 2 3-1 2 3 3-1 1-3 3-1 2-3-2-2 1-3-3-2-3 1Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+  </header>
+  <main id="menuView" class="menu-view"></main>
+  <main id="playView" class="play-view" hidden>
+    <div class="chamber-top"><button class="back-button" data-action="leave">← Journey</button><div><p id="levelEyebrow" class="eyebrow"></p><h1 id="levelName"></h1></div><button class="icon-button" data-action="pause" aria-label="Pause game" title="Pause (Escape)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg></button></div>
+    <div class="mobile-game-stats"><button id="mobileProgress" data-action="inspect">0/0 restored ↗</button><span id="mobileShots">0 shots</span><span id="mobilePressure">No falling sands</span></div>
+    <div class="play-layout">
+      <aside class="chamber-panel">
+        <div class="panel-heading"><span class="eyebrow">YOUR RESTORATION</span><span id="modeBadge" class="small-badge">CAMPAIGN</span></div>
+        <p id="objectiveText" class="objective"></p>
+        <div class="restoration-meter"><span id="restorationFill"></span></div>
+        <div class="panel-stats"><div><span id="restoredNumber">0/0</span><small>fragments</small></div><div><span id="shotNumber">0</span><small>shots</small></div><div><span id="scoreNumber">0</span><small>score</small></div></div>
+        <div class="craft-goal"><span class="gold">✦</span><div><small>CRAFT STAR</small><p id="craftText"></p><small id="parText"></small></div></div>
+        <div class="pressure-note"><span id="pressureIcon">◷</span><div><strong id="pressureText"></strong><small id="waveText"></small></div></div>
+        <div id="tutorialCard" class="tutorial-card" hidden><span class="eyebrow">A LITTLE GUIDANCE</span><p id="tutorialText"></p></div>
+        <div class="material-guide"><span class="eyebrow">IN THIS CHAMBER</span><div id="materialList"></div></div>
+        <div class="panel-actions"><button class="text-button" data-action="help">How to play ↗</button><button class="text-button" data-action="inspect">Inspect board ↗</button></div>
+        <blockquote id="loreText"></blockquote>
+      </aside>
+      <div class="board-column">
+        <div class="board-status"><span id="phaseText">CHOOSE YOUR ANGLE</span><span id="flightTime"></span><span id="turnText">TURN 1</span></div>
+        <div id="boardFrame" class="board-frame"><canvas id="gameCanvas" width="480" height="720" tabindex="0" aria-label="Ricochet game board. Use Left and Right to aim, Enter to launch, F to accelerate, R to recall, and Escape to pause."></canvas><div id="tileTooltip" class="tile-tooltip" hidden></div></div>
+        <div id="controlDock"><div class="shot-controls"><label class="angle-control" for="angleInput"><span>ANGLE <output id="angleValue">90°</output></span><input id="angleInput" type="range" min="12" max="168" value="90" step="1" aria-label="Shot angle in degrees"></label><button id="launchButton" class="button button-gold" data-action="launch">Send the light <span>↗</span></button><button id="speedButton" class="button button-subtle" data-action="speed" hidden>3× speed</button><button id="recallButton" class="button button-subtle" data-action="recall" hidden>Recall ↓</button></div>
+        <div id="abilityTray" class="ability-tray"><button data-action="ability" data-ability="pierce" title="Pierce: pass through the next two targets"><span class="ability-icon">↟</span><span>Pierce<small>2 targets</small></span><b id="pierceCount">0</b></button><button data-action="ability" data-ability="echo" title="Echo: launch a mirrored companion"><span class="ability-icon">⋈</span><span>Echo<small>mirror shot</small></span><b id="echoCount">0</b></button><button data-action="ability" data-ability="lift" title="Lift: raise targets by one pressure increment"><span class="ability-icon">↑</span><span>Lift<small>buy a breath</small></span><b id="liftCount">0</b></button><button id="rewindButton" class="rewind-button" data-action="rewind" title="Rewind your last shot once per chamber"><span>↶</span><small>Rewind</small></button></div>
+        <p id="inputHint" class="input-hint">Drag upward to aim. Release to send the light.</p></div>
+      </div>
     </div>
-    <div class="right">
-      <button id="ffwd" title="Fast forward (space)">»</button>
-      <button id="mute" title="Toggle sound">🔈</button>
-    </div>
-  </div>
-  <div id="stage"></div>
-  <div id="overlay">
-    <div id="title">Dune Arcanum</div>
-    <div id="subtitle">Drag to aim. Release to launch.</div>
-  </div>
+  </main>
+  <footer class="site-footer"><span>A little geometry. A little wonder.</span><span id="saveStatus">Progress stays in this browser <i></i></span><button data-action="help">Controls & help</button></footer>
+  <dialog id="dialog" class="game-dialog" aria-label="Game menu"><div id="dialogContent"></div></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <div id="announcer" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+  <input id="importInput" type="file" accept="application/json,.json" hidden>
+  <noscript><div class="no-script">Dune Arcanum needs JavaScript to play. Enable it in your browser and reload this page.</div></noscript>
 </body>
 </html>
